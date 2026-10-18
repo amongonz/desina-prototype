@@ -1,0 +1,37 @@
+{
+  "views": [
+    {
+      "image": "view-1.png",
+      "camera": {
+        "azimuth": 315,
+        "elevation": 0,
+        "scale": 2.4
+      }
+    },
+    {
+      "image": "view-3.png",
+      "camera": {
+        "azimuth": 225,
+        "elevation": 0,
+        "scale": 2.4
+      }
+    },
+    {
+      "image": "view-5.png",
+      "camera": {
+        "azimuth": 135,
+        "elevation": 0,
+        "scale": 2.4
+      }
+    },
+    {
+      "image": "view-7.png",
+      "camera": {
+        "azimuth": 45,
+        "elevation": 0,
+        "scale": 2.4
+      }
+    }
+  ],
+  "purpose": "Evaluation only: not passed to reconstruction or paint fitting."
+}

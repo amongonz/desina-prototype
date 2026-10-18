@@ -2,6 +2,10 @@
 
 A CPU prototype that reconstructs a smooth implicit volume from registered multi-view silhouettes, fuses surface paint into a **view-independent 3D color field**, and lets you orbit, paint, add volume, carve, smooth, undo, and save. No meshes, neural training, pretrained models, API keys, or GPU are required.
 
+**Latest evaluation: actual human-drawn character sheets expose substantial failures.** Piti Yindee's CC0 Wuffle turnarounds produce recognizable volumes, but doubled facial paint, misplaced contour lines, and coarse novel-view geometry remain. The frozen paint fitter does not resolve these issues. Read the [artist-sheet evaluation](docs/artist-sheet-evaluation.md) before interpreting the synthetic results below as evidence for general sketch reconstruction.
+
+![Actual held-out drawing, projection baseline, shared-texture fit](examples/artist-sheets/signature/comparison-41-view-1.png)
+
 ![Held-out camera: truth, reconstruction, difference](examples/bird/comparison-0.png)
 
 The synthetic bird uses seven input cameras. Three different held-out cameras reach silhouette IoUs **0.930, 0.920, 0.857** (mean **0.902**). This is a promising baseline, not a general solution for arbitrary sketches: facial paint blurs, concavities are overfilled, and camera registration is provided by the artist.

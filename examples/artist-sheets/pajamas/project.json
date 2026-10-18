@@ -1,0 +1,36 @@
+{
+  "views": [
+    {
+      "image": "view-0.png",
+      "camera": {
+        "azimuth": 0,
+        "elevation": 0,
+        "scale": 2.4
+      }
+    },
+    {
+      "image": "view-2.png",
+      "camera": {
+        "azimuth": 270,
+        "elevation": 0,
+        "scale": 2.4
+      }
+    },
+    {
+      "image": "view-4.png",
+      "camera": {
+        "azimuth": 180,
+        "elevation": 0,
+        "scale": 2.4
+      }
+    },
+    {
+      "image": "view-6.png",
+      "camera": {
+        "azimuth": 90,
+        "elevation": 0,
+        "scale": 2.4
+      }
+    }
+  ]
+}

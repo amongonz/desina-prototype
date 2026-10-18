@@ -1,0 +1,209 @@
+{
+  "frozen_method_commit": "e6e2689b74f34f5d14a1a84fa0899d6dc51b117b",
+  "source_sha256": {
+    "core.py": "9a9f439c6b11901de70a1ac26f5ecda89d6eb5452556d8528ab2d0f7b3b9c781",
+    "paint.py": "ec188a721318c60b0b1df45d75d492f3781b12d2b790f8930c054f716d0bb1fa",
+    "paint_joint.py": "3b838135693e15de2509a1d351701ae41129681d1f98a06ed2428aa272d0a214"
+  },
+  "art_sha256": "5f68ea3e9c4a9c8eb7a090830441427529eb4098fa68df9c4a6a28fbf0dd2d07",
+  "author": "Piti Yindee",
+  "art_license": "CC0-1.0",
+  "download_repository": "hjyoon02/ModelSheetTo3D",
+  "download_commit": "569363513b6f847b2363ea71b6bcdbff2bcb3c3e",
+  "download_path": "data/ModelSheets/001/original.jpg",
+  "size": 192,
+  "geometry_resolution": 80,
+  "options": {
+    "seed": 7,
+    "steps": 350,
+    "chains": 3,
+    "samples": 1800,
+    "knots": 4,
+    "max_warp": 0.065,
+    "displacement_prior": 0.025,
+    "smoothness_prior": 0.06,
+    "outlier_rate": 0.12,
+    "reference": -1,
+    "posterior_draws": 12,
+    "texture_resolution": 128,
+    "temperature": 0.008,
+    "final_temperature": 8e-05,
+    "tail_temperature": 0.00015,
+    "objective": "shared",
+    "texture_every": 50,
+    "texture_prior": 0.025
+  },
+  "sampler_seeds": [
+    41,
+    73
+  ],
+  "train_indices": [
+    0,
+    2,
+    4,
+    6
+  ],
+  "held_out_indices": [
+    1,
+    3,
+    5,
+    7
+  ],
+  "azimuth_degrees": [
+    0,
+    315,
+    270,
+    225,
+    180,
+    135,
+    90,
+    45
+  ],
+  "camera_elevation": 0,
+  "camera_scale": 2.4,
+  "column_centers": [
+    139,
+    303,
+    440,
+    582,
+    750,
+    919,
+    1056,
+    1197
+  ],
+  "outfits": {
+    "signature": {
+      "top": 432,
+      "center_y": 561,
+      "gaps": [
+        [
+          [
+            94,
+            573
+          ],
+          [
+            182,
+            574
+          ]
+        ],
+        [
+          [
+            276,
+            566
+          ],
+          [
+            307,
+            638
+          ]
+        ],
+        [],
+        [
+          [
+            555,
+            568
+          ],
+          [
+            584,
+            638
+          ]
+        ],
+        [
+          [
+            699,
+            566
+          ],
+          [
+            791,
+            574
+          ]
+        ],
+        [
+          [
+            943,
+            568
+          ],
+          [
+            915,
+            638
+          ]
+        ],
+        [],
+        [
+          [
+            1223,
+            566
+          ],
+          [
+            1192,
+            638
+          ]
+        ]
+      ]
+    },
+    "pajamas": {
+      "top": 701,
+      "center_y": 824,
+      "gaps": [
+        [
+          [
+            97,
+            840
+          ],
+          [
+            182,
+            840
+          ]
+        ],
+        [
+          [
+            283,
+            831
+          ],
+          [
+            307,
+            906
+          ]
+        ],
+        [],
+        [
+          [
+            586,
+            908
+          ]
+        ],
+        [
+          [
+            703,
+            831
+          ],
+          [
+            791,
+            840
+          ]
+        ],
+        [
+          [
+            915,
+            907
+          ]
+        ],
+        [],
+        [
+          [
+            1194,
+            906
+          ]
+        ]
+      ]
+    }
+  },
+  "crop_width": 178,
+  "crop_height": 243,
+  "source_canvas_span": 282,
+  "mask_ink_threshold": 0.78,
+  "normalization": "Only per-column translation and one common scale; no local alignment or stretching.",
+  "protocol": "Final framing fixed after a pilot exposed world-cube clipping at the feet. All final runs regenerated. Two outfits, both sampler seeds, all four held-out views reported; no fitter or hyperparameter changes.",
+  "pose_control": "One training view: smooth image deformation, RGB AND mask; maximum displacement 4 source pixels. Not an articulated 3D pose or new human drawing.",
+  "contour_control": "Uniform cream surface plus black two-pixel image silhouette outlines, from the human masks; diagnostic, not additional artist artwork.",
+  "limitations": "One artist, one character, two outfits; approximate cameras and no 3D ground truth. Held-out agreement is image agreement, not shape accuracy."
+}

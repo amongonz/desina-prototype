@@ -1,0 +1,238 @@
+{
+  "baseline": {
+    "train": [
+      {
+        "view": 0,
+        "silhouette_iou": 0.9631552917903067,
+        "foreground_psnr_db": 22.603133807831597,
+        "overlap_color_mae": 0.026742996527517306,
+        "gradient_mae": 0.01687187738289906,
+        "input_foreground_recall": 0.9983766233766234
+      },
+      {
+        "view": 2,
+        "silhouette_iou": 0.9236331345934289,
+        "foreground_psnr_db": 20.296133859744955,
+        "overlap_color_mae": 0.030665473832253785,
+        "gradient_mae": 0.019035604899451747,
+        "input_foreground_recall": 0.9414274631497285
+      },
+      {
+        "view": 4,
+        "silhouette_iou": 0.9609572817119987,
+        "foreground_psnr_db": 22.90014292468591,
+        "overlap_color_mae": 0.0245152425930587,
+        "gradient_mae": 0.014698183720911799,
+        "input_foreground_recall": 0.9890710382513661
+      },
+      {
+        "view": 6,
+        "silhouette_iou": 0.9230086250634196,
+        "foreground_psnr_db": 20.160969334485202,
+        "overlap_color_mae": 0.03154195566012947,
+        "gradient_mae": 0.019318096926579917,
+        "input_foreground_recall": 0.9412753848143837
+      }
+    ],
+    "held_out": [
+      {
+        "view": 1,
+        "silhouette_iou": 0.758199121522694,
+        "foreground_psnr_db": 10.973248464177852,
+        "overlap_color_mae": 0.1514197948097935,
+        "gradient_mae": 0.05311662362088865,
+        "input_foreground_recall": 0.9967279376383409
+      },
+      {
+        "view": 3,
+        "silhouette_iou": 0.7623914154317833,
+        "foreground_psnr_db": 10.879399903277543,
+        "overlap_color_mae": 0.17228563753283943,
+        "gradient_mae": 0.05465648086280434,
+        "input_foreground_recall": 0.9939094023601066
+      },
+      {
+        "view": 5,
+        "silhouette_iou": 0.760644502770487,
+        "foreground_psnr_db": 11.245438834142046,
+        "overlap_color_mae": 0.1602168488094831,
+        "gradient_mae": 0.052813948920919354,
+        "input_foreground_recall": 0.993146120894812
+      },
+      {
+        "view": 7,
+        "silhouette_iou": 0.7600936220011703,
+        "foreground_psnr_db": 10.936367721444762,
+        "overlap_color_mae": 0.15432524946643172,
+        "gradient_mae": 0.05433039795774393,
+        "input_foreground_recall": 0.996070161986006
+      }
+    ]
+  },
+  "fitted": [
+    {
+      "seed": 41,
+      "held_out": [
+        {
+          "view": 1,
+          "silhouette_iou": 0.758199121522694,
+          "foreground_psnr_db": 10.786921358255901,
+          "overlap_color_mae": 0.15543754944815452,
+          "gradient_mae": 0.05406923840086712,
+          "input_foreground_recall": 0.9967279376383409
+        },
+        {
+          "view": 3,
+          "silhouette_iou": 0.7623914154317833,
+          "foreground_psnr_db": 10.812094795605276,
+          "overlap_color_mae": 0.1738752396311351,
+          "gradient_mae": 0.0552321204544479,
+          "input_foreground_recall": 0.9939094023601066
+        },
+        {
+          "view": 5,
+          "silhouette_iou": 0.760644502770487,
+          "foreground_psnr_db": 10.953261342852025,
+          "overlap_color_mae": 0.16736586001504944,
+          "gradient_mae": 0.054045514796615055,
+          "input_foreground_recall": 0.993146120894812
+        },
+        {
+          "view": 7,
+          "silhouette_iou": 0.7600936220011703,
+          "foreground_psnr_db": 10.998193468465612,
+          "overlap_color_mae": 0.14683311179022432,
+          "gradient_mae": 0.05347323426760953,
+          "input_foreground_recall": 0.996070161986006
+        }
+      ],
+      "fit_seconds": 25.009882595000022,
+      "initial_energy": 0.8370855400163971,
+      "export_energy": 0.6515327807441392,
+      "sdf_unchanged": true
+    },
+    {
+      "seed": 73,
+      "held_out": [
+        {
+          "view": 1,
+          "silhouette_iou": 0.758199121522694,
+          "foreground_psnr_db": 10.874659820091068,
+          "overlap_color_mae": 0.15173452195552242,
+          "gradient_mae": 0.053667061581547576,
+          "input_foreground_recall": 0.9967279376383409
+        },
+        {
+          "view": 3,
+          "silhouette_iou": 0.7623914154317833,
+          "foreground_psnr_db": 10.941397155278015,
+          "overlap_color_mae": 0.16999822815751037,
+          "gradient_mae": 0.05451205324896745,
+          "input_foreground_recall": 0.9939094023601066
+        },
+        {
+          "view": 5,
+          "silhouette_iou": 0.760644502770487,
+          "foreground_psnr_db": 10.945338585027882,
+          "overlap_color_mae": 0.17171268464156658,
+          "gradient_mae": 0.054892256030191294,
+          "input_foreground_recall": 0.993146120894812
+        },
+        {
+          "view": 7,
+          "silhouette_iou": 0.7600936220011703,
+          "foreground_psnr_db": 11.018735104011652,
+          "overlap_color_mae": 0.14907796526605147,
+          "gradient_mae": 0.05370003717856425,
+          "input_foreground_recall": 0.996070161986006
+        }
+      ],
+      "fit_seconds": 24.64357117899999,
+      "initial_energy": 0.8354630624669214,
+      "export_energy": 0.6907221928258965,
+      "sdf_unchanged": true
+    }
+  ],
+  "leave_one_out": [
+    {
+      "omitted_view": 0,
+      "front": {
+        "silhouette_iou": 0.9434845793637978,
+        "foreground_psnr_db": 10.463712622016354,
+        "overlap_color_mae": 0.22867880999909465,
+        "gradient_mae": 0.0441670826808599,
+        "input_foreground_recall": 0.9984620642515379
+      },
+      "volume_fraction_vs_full": 1.022053222120363
+    },
+    {
+      "omitted_view": 2,
+      "front": {
+        "silhouette_iou": 0.9628378378378378,
+        "foreground_psnr_db": 22.073856117488006,
+        "overlap_color_mae": 0.0360042546603165,
+        "gradient_mae": 0.023428313953653593,
+        "input_foreground_recall": 0.9983766233766234
+      },
+      "volume_fraction_vs_full": 1.0714922077754394
+    },
+    {
+      "omitted_view": 4,
+      "front": {
+        "silhouette_iou": 0.960193696651346,
+        "foreground_psnr_db": 21.109484601601643,
+        "overlap_color_mae": 0.037634714497547204,
+        "gradient_mae": 0.023622110484428673,
+        "input_foreground_recall": 0.9995727956254272
+      },
+      "volume_fraction_vs_full": 1.0038735167658717
+    },
+    {
+      "omitted_view": 6,
+      "front": {
+        "silhouette_iou": 0.9628378378378378,
+        "foreground_psnr_db": 22.15189986183065,
+        "overlap_color_mae": 0.035893118810636324,
+        "gradient_mae": 0.023415483944216615,
+        "input_foreground_recall": 0.9983766233766234
+      },
+      "volume_fraction_vs_full": 1.0718666477294736
+    }
+  ],
+  "pose_control": {
+    "max_displacement_source_pixels": 4,
+    "input_mask_changed_fraction": 0.02725563909774436,
+    "removed_original_volume_fraction": 0.00774703353174347,
+    "added_volume_fraction": 0.0066237136696406665,
+    "symmetric_difference_fraction": 0.014370747201384136,
+    "canonical_front": {
+      "silhouette_iou": 0.9543663821405122,
+      "foreground_psnr_db": 19.37038092393084,
+      "overlap_color_mae": 0.046950417503754165,
+      "gradient_mae": 0.027321677535792586,
+      "input_foreground_recall": 0.9935064935064936
+    }
+  },
+  "contour_control": [
+    {
+      "view": 1,
+      "dark_interior_fraction": 0.06308588801621484,
+      "dark_boundary_recall": 0.45104510451045104
+    },
+    {
+      "view": 3,
+      "dark_interior_fraction": 0.08572151045178691,
+      "dark_boundary_recall": 0.31555555555555553
+    },
+    {
+      "view": 5,
+      "dark_interior_fraction": 0.0558225820052281,
+      "dark_boundary_recall": 0.4544456641053787
+    },
+    {
+      "view": 7,
+      "dark_interior_fraction": 0.09701366627298802,
+      "dark_boundary_recall": 0.31596452328159647
+    }
+  ]
+}

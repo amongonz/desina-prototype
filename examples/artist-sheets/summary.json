@@ -1,0 +1,70 @@
+{
+  "signature": {
+    "baseline_held_out": {
+      "silhouette_iou": 0.7473460983509648,
+      "foreground_psnr_db": 8.967458767208822,
+      "overlap_color_mae": 0.17451201297726146,
+      "gradient_mae": 0.05764872225832904
+    },
+    "fitted_held_out": {
+      "silhouette_iou": 0.7473460983509648,
+      "foreground_psnr_db": 8.825418186297274,
+      "overlap_color_mae": 0.17745937150642455,
+      "gradient_mae": 0.056927664501479645
+    },
+    "baseline_training_foreground_recall": 0.9738510391145926,
+    "baseline_training_iou": 0.9518616020476858,
+    "pose_control": {
+      "max_displacement_source_pixels": 4,
+      "input_mask_changed_fraction": 0.029136407384723072,
+      "removed_original_volume_fraction": 0.005358258765340176,
+      "added_volume_fraction": 0.016353990772626344,
+      "symmetric_difference_fraction": 0.02171224953796652,
+      "canonical_front": {
+        "silhouette_iou": 0.9388422818791946,
+        "foreground_psnr_db": 18.339350155183617,
+        "overlap_color_mae": 0.05219171461853518,
+        "gradient_mae": 0.02676015969956821,
+        "input_foreground_recall": 0.9791757809082159
+      }
+    },
+    "contour_control": {
+      "dark_interior_fraction": 0.08361735769592345,
+      "dark_boundary_recall": 0.3681743646537048
+    }
+  },
+  "pajamas": {
+    "baseline_held_out": {
+      "silhouette_iou": 0.7603321654315336,
+      "foreground_psnr_db": 11.00861373076055,
+      "overlap_color_mae": 0.15956188265463694,
+      "gradient_mae": 0.05372936284058906
+    },
+    "fitted_held_out": {
+      "silhouette_iou": 0.7603321654315336,
+      "foreground_psnr_db": 10.91632520369843,
+      "overlap_color_mae": 0.1607543951131518,
+      "gradient_mae": 0.05419893949485127
+    },
+    "baseline_training_foreground_recall": 0.9675376273980254,
+    "baseline_training_iou": 0.9426885832897884,
+    "pose_control": {
+      "max_displacement_source_pixels": 4,
+      "input_mask_changed_fraction": 0.02725563909774436,
+      "removed_original_volume_fraction": 0.00774703353174347,
+      "added_volume_fraction": 0.0066237136696406665,
+      "symmetric_difference_fraction": 0.014370747201384136,
+      "canonical_front": {
+        "silhouette_iou": 0.9543663821405122,
+        "foreground_psnr_db": 19.37038092393084,
+        "overlap_color_mae": 0.046950417503754165,
+        "gradient_mae": 0.027321677535792586,
+        "input_foreground_recall": 0.9935064935064936
+      }
+    },
+    "contour_control": {
+      "dark_interior_fraction": 0.07541091168655448,
+      "dark_boundary_recall": 0.3842527118632454
+    }
+  }
+}
