@@ -43,14 +43,17 @@ class Model:
     sdf: np.ndarray
     color: np.ndarray
     metadata: dict = field(default_factory=dict)
+    uncertainty: np.ndarray | None = None
+    paint_warps: np.ndarray | None = None
+    paint_samples: np.ndarray | None = None
 
     @property
     def spacing(self):
         return 2/(self.sdf.shape[0]-1)
 
     def sample(self, points, volume=None, outside=1.):
-        coords = ((np.asarray(points)+1)/self.spacing).T
         volume = self.sdf if volume is None else volume
+        coords = ((np.asarray(points)+1)*(volume.shape[0]-1)/2).T
         if volume.ndim == 4:
             return np.stack([ndi.map_coordinates(volume[..., c], coords, order=1,
                              mode='constant', cval=outside) for c in range(3)], axis=-1)
@@ -63,13 +66,17 @@ class Model:
         return grad / np.maximum(np.linalg.norm(grad, axis=-1, keepdims=True), 1e-8)
 
     def save(self, path):
+        extra = {key: getattr(self, key) for key in ('uncertainty', 'paint_warps', 'paint_samples')
+                 if getattr(self, key) is not None}
         np.savez_compressed(path, sdf=self.sdf, color=self.color,
-                            metadata=json.dumps(self.metadata))
+                            metadata=json.dumps(self.metadata), **extra)
 
     @classmethod
     def load(cls, path):
         with np.load(path, allow_pickle=False) as data:
-            return cls(data['sdf'], data['color'], json.loads(str(data['metadata'])))
+            extra = {key: data[key] for key in ('uncertainty', 'paint_warps', 'paint_samples')
+                     if key in data}
+            return cls(data['sdf'], data['color'], json.loads(str(data['metadata'])), **extra)
 
 
 def grid(n):
@@ -190,11 +197,14 @@ def reconstruct(views, resolution=80, tolerance=1., smooth=.7):
     return model
 
 
-def bake_paint(model, views):
+def bake_paint(model, views, texture_resolution=None):
     """Fuse only visible, front-facing samples; extend missing color by nearest surface."""
-    shell = np.abs(model.sdf) < model.spacing*2
+    n = texture_resolution or len(model.sdf)
+    sampled_sdf = ndi.zoom(model.sdf, n/len(model.sdf), order=1) if n != len(model.sdf) else model.sdf
+    spacing = 2/(n-1)
+    shell = np.abs(sampled_sdf) < spacing*2
     indices = np.argwhere(shell)
-    p = indices*model.spacing-1
+    p = indices*spacing-1
     normals = model.normals(p)
     total = np.zeros(len(p))
     colors = np.zeros((len(p), 3))
@@ -228,8 +238,9 @@ def bake_paint(model, views):
     model.metadata['paint_coverage'] = float(known.mean())
     # Extend shell colors to the volume for robust sculpting and interpolation.
     nearest = ndi.distance_transform_edt(~shell, return_distances=False, return_indices=True)
-    model.color[tuple(indices.T)] = colors
-    model.color = model.color[tuple(nearest)].astype(np.float32)
+    volume = np.zeros((*shell.shape, 3), np.float32)
+    volume[tuple(indices.T)] = colors
+    model.color = volume[tuple(nearest)]
 
 
 def brush(model, center, radius=.12, mode='paint', color=(.9, .25, .1), strength=1.):
@@ -241,7 +252,8 @@ def brush(model, center, radius=.12, mode='paint', color=(.9, .25, .1), strength
     color = np.asarray(color, float)
     if color.shape != (3,) or not np.isfinite(color).all() or np.any((color < 0) | (color > 1)):
         raise ValueError('Paint color needs three values in [0,1].')
-    distance = np.linalg.norm(grid(len(model.sdf))-center, axis=-1)
+    resolution = len(model.color) if mode == 'paint' else len(model.sdf)
+    distance = np.linalg.norm(grid(resolution)-center, axis=-1)
     weight = np.clip(1-distance/radius, 0, 1)*strength
     if mode == 'paint':
         model.color += weight[..., None]*(color-model.color)

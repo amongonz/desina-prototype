@@ -6,6 +6,20 @@ A CPU prototype that reconstructs a smooth implicit volume from registered multi
 
 The synthetic bird uses seven input cameras. Three different held-out cameras reach silhouette IoUs **0.930, 0.920, 0.857** (mean **0.902**). This is a promising baseline, not a general solution for arbitrary sketches: facial paint blurs, concavities are overfilled, and camera registration is provided by the artist.
 
+## Inconsistent paint: Monte Carlo experiment
+
+A second prototype fits **continuous probabilistic paint correspondences** using small, tunable Monte Carlo moves over smooth control fields. It needs no identified features, paired landmarks, neural networks, or pretraining. It keeps geometry fixed and returns a shared 3D paint field plus saved warp hypotheses and uncertainty diagnostics.
+
+```sh
+uv run desina paint-demo --out examples/paint
+uv run desina fit-paint model.npz drawings/project.json --out fitted.npz
+uv run desina render fitted.npz --azimuth 23 --elevation 18 --flat --out novel.png
+```
+
+![Inconsistent paintings: truth, baseline, fusion-only, Monte Carlo](examples/paint/comparison-0.png)
+
+On independently distorted procedural trouser paintings, overlap RGB MAE improves about **14%** across three withheld cameras. Mean foreground PSNR is nearly unchanged, with small regressions in two views. Tear-like details are paint, not physical cloth openings. The method still needs calibrated silhouettes/cameras; it does not yet handle arbitrary pose or lighting differences. Read [the experiment report](docs/paint-fitting.md) for all comparisons, the objective, sampler controls, and limitations. Precision-painting and source-correction tools are outside this iteration.
+
 ## Run
 
 Python 3.14 and [uv](https://docs.astral.sh/uv/) match the original project setup.
@@ -78,6 +92,6 @@ The `.npz` holds `sdf` (negative inside), `color` (fixed linear interpolation of
 
 The synthetic ground truth is an **independent exact ray/ellipsoid intersection renderer** with world-space paint patterns. Reconstruction sees only seven PNGs and camera hints, never primitive identities, depths, or held-out images. The analytic renderer is confined to `demo.py`. Evaluation uses flat colors to avoid introducing lighting differences. PSNR is measured over the union of foreground masks, rather than being inflated by the large white background. Metrics and full camera definitions are in [metrics.json](examples/bird/metrics.json).
 
-Five automated checks cover analytic sphere hits, unseen bird reconstruction, front/back visibility separation, painting from two views, persistent paint/sculpt edits, closed-outline and explicit-mask loading, and invalid input handling. The desktop UI imports/compiles successfully but was not interactively tested in this headless environment.
+Ten automated checks cover analytic sphere hits, unseen bird reconstruction, front/back visibility separation, painting from two views, persistent paint/sculpt edits, closed-outline and explicit-mask loading, and invalid input handling. The desktop UI imports/compiles successfully but was not interactively tested in this headless environment.
 
 Read [research notes](docs/research.md) for the referenced methods, alternatives, limitations, and next experiments.

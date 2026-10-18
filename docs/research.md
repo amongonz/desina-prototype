@@ -17,7 +17,7 @@ The surface RGB field depends only on position. Its *construction* uses camera v
 
 ## Monte Carlo options considered
 
-Monte Carlo search is useful when plausible camera alignments, stroke correspondences, or depth hints produce multiple shape hypotheses. A practical next experiment would sample small azimuth/elevation/scale/translation perturbations, reconstruct each candidate, rank by silhouette reprojection plus complexity and artist constraints, and let the artist choose among several hypotheses. This searches uncertainty rather than averaging surfaces into one oversized volume. It was **not implemented** in the baseline: the synthetic inputs have known cameras, so a deterministic visual hull isolates whether geometry, visibility, paint, and editing work. Sampling alone cannot resolve hidden concavities without extra constraints.
+Monte Carlo search is useful when plausible camera alignments, stroke correspondences, or depth hints produce multiple shape hypotheses. A practical next experiment would sample small azimuth/elevation/scale/translation perturbations, reconstruct each candidate, rank by silhouette reprojection plus complexity and artist constraints, and let the artist choose among several hypotheses. This searches uncertainty rather than averaging surfaces into one oversized volume. It was **not implemented** in the original baseline: the synthetic inputs have known cameras, so a deterministic visual hull isolates whether geometry, visibility, paint, and editing work. Sampling alone cannot resolve hidden concavities without extra constraints.
 
 A second option is per-object random-ray optimization of a grid or small randomly initialized SDF network against silhouettes, paint, sparse depth, and normal constraints. It would still use only artist-provided images. Before doing that, add camera fitting and a few 2D point correspondences; otherwise optimization can explain inaccurate sketches with implausible geometry.
 
@@ -47,3 +47,7 @@ Mean silhouette IoU: 0.9024. These are three views of one simple generated objec
 - Desktop editing requires Tk and a display; automated validation covers the reconstruction/renderer/edit core, not real GUI interactions.
 
 Next, test actual hand-painted orthographic sheets; ask for a few corresponding landmarks and one thickness hint; fit small camera offsets; add localized depth constraints and per-view paint priorities. Only then compare a per-object neural variational fit against this deterministic baseline on the same held-out cameras.
+
+## Follow-up experiment
+
+Continuous Monte Carlo paint correspondence fitting is now implemented. See [paint-fitting.md](paint-fitting.md) for the actual algorithm, benchmark, tuning controls, and mixed quantitative results. It fits only image-to-surface paint correspondence on fixed reconstructed geometry; camera/shape-hypothesis search and the other proposed improvements remain future work.

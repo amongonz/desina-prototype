@@ -1,0 +1,169 @@
+{
+  "distortion_fraction": 0.035,
+  "size": 160,
+  "resolution": 80,
+  "input_views": 9,
+  "held_out": [
+    {
+      "camera": {
+        "azimuth": 23,
+        "elevation": 18,
+        "scale": 2.6
+      },
+      "baseline": {
+        "silhouette_iou": 0.9449481865284974,
+        "foreground_psnr_db": 12.16943009610717,
+        "overlap_color_mae": 0.09729618495940465
+      },
+      "fusion_only": {
+        "silhouette_iou": 0.9449481865284974,
+        "foreground_psnr_db": 11.6511427939419,
+        "overlap_color_mae": 0.0999438185195137
+      },
+      "monte_carlo": {
+        "silhouette_iou": 0.9449481865284974,
+        "foreground_psnr_db": 12.50760588329099,
+        "overlap_color_mae": 0.0794960751995109
+      }
+    },
+    {
+      "camera": {
+        "azimuth": 113,
+        "elevation": -8,
+        "scale": 2.6
+      },
+      "baseline": {
+        "silhouette_iou": 0.9342661034846885,
+        "foreground_psnr_db": 12.607475137390185,
+        "overlap_color_mae": 0.07793941519896842
+      },
+      "fusion_only": {
+        "silhouette_iou": 0.9342661034846885,
+        "foreground_psnr_db": 12.245117537981221,
+        "overlap_color_mae": 0.07721045697923015
+      },
+      "monte_carlo": {
+        "silhouette_iou": 0.9342661034846885,
+        "foreground_psnr_db": 12.560256056315852,
+        "overlap_color_mae": 0.06792735557284102
+      }
+    },
+    {
+      "camera": {
+        "azimuth": 248,
+        "elevation": 25,
+        "scale": 2.6
+      },
+      "baseline": {
+        "silhouette_iou": 0.9408333333333333,
+        "foreground_psnr_db": 13.611537458633876,
+        "overlap_color_mae": 0.05696033861128622
+      },
+      "fusion_only": {
+        "silhouette_iou": 0.9408333333333333,
+        "foreground_psnr_db": 13.23995290928808,
+        "overlap_color_mae": 0.055660822900921905
+      },
+      "monte_carlo": {
+        "silhouette_iou": 0.9408333333333333,
+        "foreground_psnr_db": 13.40620407743179,
+        "overlap_color_mae": 0.051997343654577095
+      }
+    }
+  ],
+  "mean_foreground_psnr_db": {
+    "baseline": 12.796147564043745,
+    "fusion_only": 12.378737747070401,
+    "monte_carlo": 12.82468867234621
+  },
+  "fit": {
+    "map_energy": 0.7445007825098536,
+    "chains": [
+      {
+        "chain": 0,
+        "energies": [
+          0.1857972374581213,
+          0.4248996141734674,
+          0.7848233950021493
+        ],
+        "acceptance_rate": 0.524973544973545
+      },
+      {
+        "chain": 1,
+        "energies": [
+          0.20850670326165258,
+          0.5038495077554215,
+          0.8832634180211654
+        ],
+        "acceptance_rate": 0.539047619047619
+      },
+      {
+        "chain": 2,
+        "energies": [
+          0.1840550653660592,
+          0.4048638714844427,
+          0.7445007825098536
+        ],
+        "acceptance_rate": 0.5108994708994709
+      }
+    ],
+    "tail_temperature": 0.00015,
+    "initial_energy": 1.338146245754631,
+    "seconds": 41.90331151200007,
+    "options": {
+      "seed": 7,
+      "steps": 350,
+      "chains": 3,
+      "samples": 1800,
+      "knots": 4,
+      "max_warp": 0.065,
+      "displacement_prior": 0.025,
+      "smoothness_prior": 0.06,
+      "outlier_rate": 0.12,
+      "reference": -1,
+      "posterior_draws": 12,
+      "texture_resolution": 128,
+      "temperature": 0.008,
+      "final_temperature": 8e-05,
+      "tail_temperature": 0.00015
+    },
+    "aligned": true,
+    "quadrature_samples": 1800,
+    "visible_shell_fraction": 0.9693435754189944,
+    "mean_uncertainty": 0.21506963138657273,
+    "source_fraction": [
+      0.1869413407821229,
+      0.1018854748603352,
+      0.07370810055865921,
+      0.09060754189944134,
+      0.18987430167597766,
+      0.09322625698324022,
+      0.0714036312849162,
+      0.11246508379888268,
+      0.07988826815642458
+    ],
+    "view_names": [
+      "input-0.png",
+      "input-1.png",
+      "input-2.png",
+      "input-3.png",
+      "input-4.png",
+      "input-5.png",
+      "input-6.png",
+      "input-7.png",
+      "input-8.png"
+    ],
+    "tail_displacement_std_pixels": [
+      0.07636125352027259,
+      0.09411587569028818,
+      0.05475606440043081,
+      0.06531137244483556,
+      0.0998432083195701,
+      0.19076508150291055,
+      0.059421215180391576,
+      0.06632044239751478,
+      0.06038485488952072
+    ]
+  },
+  "scope": "Fixed reconstructed geometry; tear-like regions are paint, not physical holes."
+}
