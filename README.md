@@ -6,19 +6,24 @@ A CPU prototype that reconstructs a smooth implicit volume from registered multi
 
 The synthetic bird uses seven input cameras. Three different held-out cameras reach silhouette IoUs **0.930, 0.920, 0.857** (mean **0.902**). This is a promising baseline, not a general solution for arbitrary sketches: facial paint blurs, concavities are overfilled, and camera registration is provided by the artist.
 
-## Inconsistent paint: Monte Carlo experiment
+## Inconsistent paint: shared-texture Monte Carlo experiment
 
-A second prototype fits **continuous probabilistic paint correspondences** using small, tunable Monte Carlo moves over smooth control fields. It needs no identified features, paired landmarks, neural networks, or pretraining. It keeps geometry fixed and returns a shared 3D paint field plus saved warp hypotheses and uncertainty diagnostics.
+The current paint fitter jointly optimizes continuous correspondence warps and a shared **3D RGB volume**. Its observation likelihood samples the same native volume as the renderer. It uses simple Monte Carlo warp proposals plus monotone canonical-color proposals, with no identified features, paired landmarks, neural networks, or pretraining. Multiple complete chain interpretations and uncertainty diagnostics are saved.
 
 ```sh
-uv run desina paint-demo --out examples/paint
+uv run desina paint-demo --out examples/paint-shared
 uv run desina fit-paint model.npz drawings/project.json --out fitted.npz
-uv run desina render fitted.npz --azimuth 23 --elevation 18 --flat --out novel.png
+uv run desina render fitted.npz --hypothesis 1 --flat --out alternative.png
+uv run desina paint-benchmark --out examples/paint-validation
 ```
 
-![Inconsistent paintings: truth, baseline, fusion-only, Monte Carlo](examples/paint/comparison-0.png)
+![Shared texture: truth, projection baseline, identity texture fit, fitted result](examples/paint-shared/comparison-0.png)
 
-On independently distorted procedural trouser paintings, overlap RGB MAE improves about **14%** across three withheld cameras. Mean foreground PSNR is nearly unchanged, with small regressions in two views. Tear-like details are paint, not physical cloth openings. The method still needs calibrated silhouettes/cameras; it does not yet handle arbitrary pose or lighting differences. Read [the experiment report](docs/paint-fitting.md) for all comparisons, the objective, sampler controls, and limitations. Precision-painting and source-correction tools are outside this iteration.
+On the fixed fresh suite, aggregate color error falls **6.8% versus projection averaging** and **2.1% versus corrected pairwise fitting**, winning 11/12 and 6/12 runs respectively. PSNR stays nearly unchanged versus averaging. All per-run results, including regressions, are preserved.
+
+Read [the shared-texture report](docs/shared-texture.md) for the reviewed bug fixes, sampler controls, retained alternatives, and the full fresh-corruption evaluation. The [original pairwise experiment](docs/paint-fitting.md) and its mixed results remain available in `examples/paint/`. Use `--objective pairwise` for the corrected earlier objective.
+
+Geometry stays fixed during paint fitting. Cameras/silhouettes remain calibrated, and tear-like regions are paint. Precision-painting and input-correction tools are outside this iteration. The retained chain bank and uncertainty image are exploratory diagnostics, not a converged or calibrated joint posterior.
 
 ## Run
 
@@ -92,6 +97,6 @@ The `.npz` holds `sdf` (negative inside), `color` (fixed linear interpolation of
 
 The synthetic ground truth is an **independent exact ray/ellipsoid intersection renderer** with world-space paint patterns. Reconstruction sees only seven PNGs and camera hints, never primitive identities, depths, or held-out images. The analytic renderer is confined to `demo.py`. Evaluation uses flat colors to avoid introducing lighting differences. PSNR is measured over the union of foreground masks, rather than being inflated by the large white background. Metrics and full camera definitions are in [metrics.json](examples/bird/metrics.json).
 
-Ten automated checks cover analytic sphere hits, unseen bird reconstruction, front/back visibility separation, painting from two views, persistent paint/sculpt edits, closed-outline and explicit-mask loading, and invalid input handling. The desktop UI imports/compiles successfully but was not interactively tested in this headless environment.
+Thirteen automated checks cover analytic sphere hits, unseen bird reconstruction, front/back visibility separation, painting from two views, persistent paint/sculpt edits, closed-outline and explicit-mask loading, and invalid input handling. The desktop UI imports/compiles successfully but was not interactively tested in this headless environment.
 
 Read [research notes](docs/research.md) for the referenced methods, alternatives, limitations, and next experiments.

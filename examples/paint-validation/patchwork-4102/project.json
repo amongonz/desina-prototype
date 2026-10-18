@@ -1,0 +1,76 @@
+{
+  "views": [
+    {
+      "image": "input-0.png",
+      "camera": {
+        "azimuth": 0,
+        "elevation": 8,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-1.png",
+      "camera": {
+        "azimuth": 45,
+        "elevation": 8,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-2.png",
+      "camera": {
+        "azimuth": 90,
+        "elevation": 8,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-3.png",
+      "camera": {
+        "azimuth": 135,
+        "elevation": 8,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-4.png",
+      "camera": {
+        "azimuth": 180,
+        "elevation": 8,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-5.png",
+      "camera": {
+        "azimuth": 225,
+        "elevation": 8,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-6.png",
+      "camera": {
+        "azimuth": 270,
+        "elevation": 8,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-7.png",
+      "camera": {
+        "azimuth": 315,
+        "elevation": 8,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-8.png",
+      "camera": {
+        "azimuth": 20,
+        "elevation": 65,
+        "scale": 2.6
+      }
+    }
+  ]
+}

@@ -19,7 +19,7 @@ PARTS = [((-.235, -.13, 0), (.245, .69, .29)),
          ((0, .43, 0), (.47, .24, .285))]
 
 
-def trouser_truth(camera, size):
+def trouser_truth(camera, size, design='rips'):
     origins, direction = camera.rays(size)
     best = np.full(len(origins), np.inf)
     material = np.zeros(len(origins), int)
@@ -60,6 +60,17 @@ def trouser_truth(camera, size):
     colors[waistband] = np.array([.10, .20, .32])+plaid[waistband, None]
     belt = waistband & (y > .48) & (y < .53)
     colors[belt] = [.78, .52, .20]
+    if design == 'patchwork':
+        palette = np.array([[.12, .39, .31], [.85, .56, .19], [.65, .20, .27], [.88, .82, .62]])
+        row = np.floor((y+.85)*6).astype(int)
+        column = np.floor((theta+np.pi)*2.5).astype(int)
+        colors = palette[(row+2*column+part) % len(palette)]
+        stitches = (np.abs(np.sin((y+.85)*6*np.pi)) < .10) | \
+                   (np.abs(np.sin((theta+np.pi)*2.5*np.pi)) < .09)
+        colors[stitches] = [.055, .09, .10]
+        colors += (.012*np.sin(theta*45)*np.cos(y*100))[:, None]
+    elif design != 'rips':
+        raise ValueError('Unknown procedural paint design.')
     rgb = np.full((len(origins), 3), .96)
     rgb[mask] = np.clip(colors, 0, 1)
     return rgb.reshape(size, size, 3), mask.reshape(size, size)

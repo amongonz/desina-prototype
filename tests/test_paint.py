@@ -98,5 +98,80 @@ class PaintTests(unittest.TestCase):
                 PaintOptions(steps=1, chains=1, samples=100, texture_resolution=24))
 
 
+class ReviewRegressionTests(unittest.TestCase):
+    def test_source_updates_decrease_energy_without_oscillation(self):
+        from desina.paint import smooth_sources
+        points = np.array([[0, 0, .5], [.02, 0, .5]])
+        unary = np.array([[0., .025], [.025, 0.]])
+        source, history = smooth_sources(unary, points, sweeps=10)
+        self.assertEqual(source[0], source[1])
+        self.assertTrue(np.all(np.diff(history) <= 1e-12))
+        self.assertLess(history[-1], history[0])
+
+    def test_best_export_includes_every_tail_move(self):
+        from unittest.mock import patch
+        from desina.paint import register
+        class Quadratic:
+            views = [None, None]
+            images = [np.zeros((4, 4, 3))]*2
+            def texture_state(self): return None
+            def restore_texture(self, state): pass
+            def refine_texture(self, controls, observations): return False
+            def observe(self, i, controls): return np.array([controls.mean()])
+            def observations(self, controls): return np.array([self.observe(i, c) for i, c in enumerate(controls)])
+            def local_loss(self, i, controls, observation, observations):
+                return (controls.mean()-(.04 if i else 0))**2
+            def energy(self, controls, observations):
+                return float(np.mean([self.local_loss(i, c, None, None) for i, c in enumerate(controls)]))
+        reg = Quadratic()
+        options = PaintOptions(steps=1, chains=1, reference=0, posterior_draws=2, objective='pairwise')
+        with patch('desina.paint.propose', side_effect=lambda c, rng, scale: c+.001):
+            best, draws, report = register(reg, options)
+        self.assertGreater(best[1].mean(), .003)
+        self.assertLessEqual(report['map_energy'], min(reg.energy(d, None) for d in draws)+1e-12)
+        self.assertAlmostEqual(report['map_energy'], reg.energy(best, None), places=12)
+        self.assertLess(report['map_energy'], report['chains'][0]['pre_tail_energy'])
+
+    def test_shared_objective_matches_export_and_conditional_delta(self):
+        from desina.paint import prepare_surface, prepare_views
+        from desina.paint_joint import SharedTextureRegistration
+        xyz = grid(32)
+        sdf = np.linalg.norm(xyz, axis=-1)-.65
+        color = np.full((*sdf.shape, 3), [.15, .3, .5], np.float32)
+        color[xyz[..., 1] > .12] = [.8, .6, .2]
+        model = Model(sdf.astype(np.float32), color)
+        rgb, mask, _ = render(model, Camera(), 64, False)
+        views = [View(Camera(), rgb, mask), View(Camera(25), *render(model, Camera(25), 64, False)[:2])]
+        options = PaintOptions(steps=12, chains=2, samples=180, texture_resolution=40, posterior_draws=2)
+        report = fit_paint(model, views, options)
+        shell, indices, points, normals = prepare_surface(model, options.texture_resolution)
+        uv, vis, images = prepare_views(model, views, points, normals)
+        eligible = np.flatnonzero((vis > .015).sum(axis=0) >= 2)
+        chosen = np.random.default_rng(options.seed).choice(eligible, min(len(eligible), options.samples), replace=False)
+        reg = SharedTextureRegistration(model, views, uv[:, chosen], vis[:, chosen], images, options,
+            points[chosen], uv, vis, points, indices, shell)
+        reg.sigma = .065
+        obs = reg.observations(model.paint_warps)
+        energy = reg.energy(model.paint_warps, obs)
+        self.assertAlmostEqual(energy, report['export_energy'], places=6)
+        self.assertAlmostEqual(energy, report['map_energy'], places=6)
+        np.testing.assert_array_equal(reg.texture_state(), model.color)
+        self.assertTrue(all(x['after'] <= x['before']+1e-12 for x in report['texture_updates']))
+        self.assertGreaterEqual(len(model.paint_hypothesis_colors), 2)
+        self.assertEqual(len(model.paint_samples), options.chains*options.posterior_draws)
+        candidate = model.paint_warps.copy()
+        candidate[0] += .0001
+        updated = reg.observations(candidate)
+        local = (reg.local_loss(0, candidate[0], updated[0], obs)-
+                 reg.local_loss(0, model.paint_warps[0], obs[0], obs))/len(views)
+        self.assertAlmostEqual(local, reg.energy(candidate, updated)-energy, places=10)
+        with tempfile.TemporaryDirectory() as tmp:
+            path = Path(tmp)/'hypotheses.npz'
+            model.save(path)
+            loaded = Model.load(path)
+            for key in ['paint_hypothesis_colors', 'paint_hypothesis_warps', 'paint_hypothesis_energies']:
+                np.testing.assert_array_equal(getattr(model, key), getattr(loaded, key))
+
+
 if __name__ == '__main__':
     unittest.main()

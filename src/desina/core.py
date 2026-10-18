@@ -46,6 +46,9 @@ class Model:
     uncertainty: np.ndarray | None = None
     paint_warps: np.ndarray | None = None
     paint_samples: np.ndarray | None = None
+    paint_hypothesis_warps: np.ndarray | None = None
+    paint_hypothesis_colors: np.ndarray | None = None
+    paint_hypothesis_energies: np.ndarray | None = None
 
     @property
     def spacing(self):
@@ -66,7 +69,8 @@ class Model:
         return grad / np.maximum(np.linalg.norm(grad, axis=-1, keepdims=True), 1e-8)
 
     def save(self, path):
-        extra = {key: getattr(self, key) for key in ('uncertainty', 'paint_warps', 'paint_samples')
+        extra = {key: getattr(self, key) for key in ('uncertainty', 'paint_warps', 'paint_samples',
+                 'paint_hypothesis_warps', 'paint_hypothesis_colors', 'paint_hypothesis_energies')
                  if getattr(self, key) is not None}
         np.savez_compressed(path, sdf=self.sdf, color=self.color,
                             metadata=json.dumps(self.metadata), **extra)
@@ -74,7 +78,8 @@ class Model:
     @classmethod
     def load(cls, path):
         with np.load(path, allow_pickle=False) as data:
-            extra = {key: data[key] for key in ('uncertainty', 'paint_warps', 'paint_samples')
+            extra = {key: data[key] for key in ('uncertainty', 'paint_warps', 'paint_samples',
+                 'paint_hypothesis_warps', 'paint_hypothesis_colors', 'paint_hypothesis_energies')
                      if key in data}
             return cls(data['sdf'], data['color'], json.loads(str(data['metadata'])), **extra)
 

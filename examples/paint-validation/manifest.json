@@ -1,0 +1,77 @@
+{
+  "version": "shared-texture-fresh-v1",
+  "options": {
+    "seed": 7,
+    "steps": 120,
+    "chains": 2,
+    "samples": 800,
+    "knots": 4,
+    "max_warp": 0.065,
+    "displacement_prior": 0.025,
+    "smoothness_prior": 0.06,
+    "outlier_rate": 0.12,
+    "reference": -1,
+    "posterior_draws": 6,
+    "texture_resolution": 80,
+    "temperature": 0.008,
+    "final_temperature": 8e-05,
+    "tail_temperature": 0.00015,
+    "objective": "shared",
+    "texture_every": 50,
+    "texture_prior": 0.025
+  },
+  "corruption_cases": [
+    [
+      4101,
+      0.02
+    ],
+    [
+      4102,
+      0.04
+    ],
+    [
+      4103,
+      0.06
+    ]
+  ],
+  "sampler_seeds": [
+    41,
+    73
+  ],
+  "designs": [
+    "rips",
+    "patchwork"
+  ],
+  "image_size": 128,
+  "geometry_resolution": 56,
+  "held_out": [
+    {
+      "azimuth": 17,
+      "elevation": 26,
+      "scale": 2.6
+    },
+    {
+      "azimuth": 73,
+      "elevation": -12,
+      "scale": 2.6
+    },
+    {
+      "azimuth": 152,
+      "elevation": 31,
+      "scale": 2.6
+    },
+    {
+      "azimuth": 237,
+      "elevation": -8,
+      "scale": 2.6
+    }
+  ],
+  "source_sha256": {
+    "paint.py": "ec188a721318c60b0b1df45d75d492f3781b12d2b790f8930c054f716d0bb1fa",
+    "paint_joint.py": "3b838135693e15de2509a1d351701ae41129681d1f98a06ed2428aa272d0a214",
+    "core.py": "9a9f439c6b11901de70a1ac26f5ecda89d6eb5452556d8528ab2d0f7b3b9c781",
+    "paint_demo.py": "1c01e7645599927a7eb104c8a92a1ee08080a235f78bdfa8354c9012c64c4f65",
+    "paint_benchmark.py": "12644e2c3cc546d998d921da9d10bd9c56ed07fb876eae62a0e24f7fe5eed989"
+  },
+  "protocol": "Written before case generation; all listed runs reported; no hyperparameter changes between cases."
+}

@@ -10,7 +10,7 @@ import numpy as np
 from scipy import ndimage as ndi
 from scipy.spatial import cKDTree
 
-from .core import Model, grid, trace
+from .core import Model, trace
 
 
 @dataclass
@@ -30,8 +30,13 @@ class PaintOptions:
     temperature: float = .008
     final_temperature: float = .00008
     tail_temperature: float = .00015
+    objective: str = "shared"
+    texture_every: int = 50
+    texture_prior: float = .025
 
     def validate(self, nviews):
+        if self.objective not in ("shared", "pairwise") or self.texture_every < 1 or not np.isfinite(self.texture_prior) or self.texture_prior < 0:
+            raise ValueError("Invalid texture objective, update interval, or prior.")
         if not (2 <= nviews and -1 <= self.reference < nviews):
             raise ValueError('Need at least two views and a valid reference index.')
         if not (1 <= self.steps <= 20000 and 1 <= self.chains <= 16 and
@@ -169,15 +174,27 @@ class Registration:
     def observe(self, i, controls):
         return sample_image(self.level_images[i], self.uv[i]+displacement(controls, self.bases[i]))
 
-    def local_loss(self, i, controls, observation, all_observations):
-        costs = residual_cost(observation[None], all_observations, self.sigma, self.options.outlier_rate)
-        data = np.sum(costs*self.pair_weight[i])*len(self.views)/self.normalizer
+    def prior_loss(self, i, controls):
         shifted = self.uv[i]+displacement(controls, self.bases[i])
         n = len(self.views[i].mask)
         support = ndi.map_coordinates(self.views[i].mask.astype(float),
                     [shifted[:, 1]*n-.5, shifted[:, 0]*n-.5], order=1, mode='constant', cval=0)
         missing = np.sum((1-support)*self.visibility[i])/max(self.visibility[i].sum(), 1e-8)
-        return data+regularization(controls, self.options)+missing*.5
+        return regularization(controls, self.options)+missing*.5
+
+    def local_loss(self, i, controls, observation, all_observations):
+        costs = residual_cost(observation[None], all_observations, self.sigma, self.options.outlier_rate)
+        data = np.sum(costs*self.pair_weight[i])*len(self.views)/self.normalizer
+        return data+self.prior_loss(i, controls)
+
+    def texture_state(self):
+        return None
+
+    def restore_texture(self, state):
+        pass
+
+    def refine_texture(self, controls, observations):
+        return False
 
     def energy(self, controls, observations):
         # local losses each count their pairwise term twice; priors are counted once.
@@ -195,26 +212,36 @@ class Registration:
 
 
 def register(reg, options, progress=None):
+    """Annealed conditional MH with monotone canonical-texture proposals.
+
+    Warp tails condition on each chain's texture. Chain winners remain separate
+    alternatives; neither this short run nor the texture updates imply convergence.
+    """
     rng = np.random.default_rng(options.seed)
     nviews = len(reg.views)
     shape = (nviews, options.knots, options.knots, 2)
     movable = [i for i in range(nviews) if i != options.reference]
-    winners, chain_logs = [], []
+    initial_texture = reg.texture_state()
+    winners, chain_logs, retained = [], [], []
     for chain in range(options.chains):
+        reg.restore_texture(initial_texture)
         controls = np.zeros(shape)
         if chain:
-            controls = rng.normal(0, options.max_warp*.12, shape)
-            controls = ndi.gaussian_filter(controls, sigma=(0, .8, .8, 0))
+            controls = ndi.gaussian_filter(rng.normal(0, options.max_warp*.12, shape),
+                                           sigma=(0, .8, .8, 0))
             if options.reference >= 0:
                 controls[options.reference] = 0
         accepted = attempted = 0
         history = []
         for stage, (blur, sigma) in enumerate([(2.2, .16), (1., .10), (0., .065)]):
-            reg.level_images = [ndi.gaussian_filter(img, (blur, blur, 0)) if blur else img
-                                for img in reg.images]
+            # Blur scales track image resolution, with 160px as the original setting.
+            reg.level_images = [ndi.gaussian_filter(img, (blur*len(img)/160,)*2+(0,))
+                                if blur else img for img in reg.images]
             reg.sigma = sigma
             obs = reg.observations(controls)
-            best, best_energy = controls.copy(), reg.energy(controls, obs)
+            reg.refine_texture(controls, obs)
+            current = reg.energy(controls, obs)
+            best, best_energy, best_texture = controls.copy(), current, reg.texture_state()
             for sweep in range(options.steps):
                 fraction = sweep/max(options.steps-1, 1)
                 temperature = options.temperature*(1-fraction)**2+options.final_temperature
@@ -225,43 +252,127 @@ def register(reg, options, progress=None):
                     if not np.isfinite(regularization(candidate, options)):
                         continue
                     color = reg.observe(i, candidate)
-                    delta = (reg.local_loss(i, candidate, color, obs) -
+                    delta = (reg.local_loss(i, candidate, color, obs)-
                              reg.local_loss(i, controls[i], obs[i], obs))/nviews
                     if delta <= 0 or np.log(rng.random()) < -delta/temperature:
                         controls[i], obs[i] = candidate, color
+                        current += delta
                         accepted += 1
-                if sweep % 10 == 0 or sweep == options.steps-1:
-                    energy = reg.energy(controls, obs)
-                    if energy < best_energy:
-                        best, best_energy = controls.copy(), energy
+                        # Record EVERY accepted state, not every tenth sweep.
+                        if current < best_energy:
+                            best, best_energy, best_texture = controls.copy(), current, reg.texture_state()
+                if (sweep+1) % options.texture_every == 0:
+                    reg.refine_texture(controls, obs)
+                    current = reg.energy(controls, obs)
+                    if current < best_energy:
+                        best, best_energy, best_texture = controls.copy(), current, reg.texture_state()
             controls = best
+            reg.restore_texture(best_texture)
+            best_energy = reg.energy(controls, reg.observations(controls))
             history.append(best_energy)
             if progress:
                 progress(f'chain {chain+1}/{options.chains}, scale {stage+1}/3: energy {best_energy:.4f}')
-        winners.append((best_energy, controls.copy()))
-        chain_logs.append({'chain': chain, 'energies': history,
-                           'acceptance_rate': accepted/max(attempted, 1)})
+        pre_tail = best_energy
+        # Each chain keeps its own fixed-texture tail instead of discarding all
+        # alternatives to the first winning chain. Export also tracks tail improvements.
+        obs = reg.observations(controls)
+        current = reg.energy(controls, obs)
+        draws = []
+        for step in range(options.posterior_draws*8):
+            for i in movable:
+                candidate = propose(controls[i], rng, options.max_warp*.025)
+                if not np.isfinite(regularization(candidate, options)):
+                    continue
+                color = reg.observe(i, candidate)
+                delta = (reg.local_loss(i, candidate, color, obs)-
+                         reg.local_loss(i, controls[i], obs[i], obs))/nviews
+                if delta <= 0 or np.log(rng.random()) < -delta/options.tail_temperature:
+                    controls[i], obs[i] = candidate, color
+                    current += delta
+                    if current < best_energy:
+                        best, best_energy, best_texture = controls.copy(), current, reg.texture_state()
+            if step % 8 == 7:
+                draws.append(controls.copy())
+        reg.restore_texture(best_texture)
+        best_energy = reg.energy(best, reg.observations(best))
+        winners.append((best_energy, best.copy(), best_texture))
+        retained.extend(draws)
+        chain_logs.append({'chain': chain, 'energies': history, 'pre_tail_energy': pre_tail,
+                           'best_energy': best_energy, 'acceptance_rate': accepted/max(attempted, 1)})
+    # Identity gets a conditional texture fit too, providing a fair fallback.
+    reg.restore_texture(initial_texture)
     identity = np.zeros(shape)
-    winners.append((reg.energy(identity, reg.observations(identity)), identity))
-    energy, best = min(winners, key=lambda x: x[0])
-    # Short fixed-temperature tail gives empirical correspondence alternatives. It is
-    # exploratory MCMC, not a claim of a converged or calibrated posterior.
-    controls, obs = best.copy(), reg.observations(best)
-    draws = []
-    for step in range(options.posterior_draws*8):
-        for i in movable:
-            candidate = propose(controls[i], rng, options.max_warp*.025)
-            if not np.isfinite(regularization(candidate, options)):
-                continue
-            color = reg.observe(i, candidate)
-            delta = (reg.local_loss(i, candidate, color, obs) -
-                     reg.local_loss(i, controls[i], obs[i], obs))/nviews
-            if delta <= 0 or np.log(rng.random()) < -delta/options.tail_temperature:
-                controls[i], obs[i] = candidate, color
-        if step % 8 == 7:
-            draws.append(controls.copy())
-    return best, np.array(draws), {'map_energy': energy, 'chains': chain_logs,
-                                 'tail_temperature': options.tail_temperature}
+    identity_obs = reg.observations(identity)
+    reg.refine_texture(identity, identity_obs)
+    fallback = (reg.energy(identity, identity_obs), identity, reg.texture_state())
+    winner = min(winners+[fallback], key=lambda x: x[0])
+    energy, best, texture = winner
+    reg.restore_texture(texture)
+    hypothesis_chains = sorted(range(len(winners)), key=lambda i: winners[i][0])
+    reg.hypotheses = [winners[i] for i in hypothesis_chains]
+    if winner is fallback:
+        reg.hypotheses.insert(0, fallback)
+        hypothesis_chains.insert(0, -1)
+    return best, np.array(retained), {'map_energy': energy, 'chains': chain_logs,
+        'tail_temperature': options.tail_temperature, 'objective': options.objective,
+        'sample_chain_indices': np.repeat(np.arange(options.chains), options.posterior_draws).tolist(),
+        'hypothesis_chain_indices': hypothesis_chains,
+        'hypothesis_energies': [h[0] for h in reg.hypotheses]}
+
+
+def source_graph(points):
+    """One undirected Potts graph; greedy coloring permits safe parallel updates."""
+    count = len(points)
+    if count < 2:
+        return np.empty((0, 2), int), [np.array([0])], np.zeros((1, 1), int), np.zeros((1, 1))
+    neighbor = cKDTree(points).query(points, k=min(7, count))[1][:, 1:]
+    edges = np.stack([np.repeat(np.arange(count), neighbor.shape[1]), neighbor.ravel()], -1)
+    edges = np.unique(np.sort(edges, axis=1), axis=0)
+    edges = edges[edges[:, 0] != edges[:, 1]]
+    adjacency = [[] for _ in range(count)]
+    for a, b in edges:
+        adjacency[a].append(b)
+        adjacency[b].append(a)
+    degree = max(map(len, adjacency))
+    padded, valid = np.zeros((count, degree), int), np.zeros((count, degree))
+    coloring = np.full(count, -1, int)
+    for i, neighbors in enumerate(adjacency):
+        padded[i, :len(neighbors)], valid[i, :len(neighbors)] = neighbors, 1
+        used = set(coloring[neighbors])
+        color = 0
+        while color in used:
+            color += 1
+        coloring[i] = color
+    groups = [np.flatnonzero(coloring == color) for color in range(coloring.max()+1)]
+    # A single edge weight defines the same energy during scoring and updates.
+    valid *= .24/(2*len(edges)/count)
+    return edges, groups, padded, valid
+
+
+def smooth_sources(unary, points, sweeps=4):
+    """Block-coordinate ICM; every block is an independent set, so energy decreases."""
+    count = len(points)
+    source = np.argmin(unary, axis=0)
+    edges, groups, neighbors, weight = source_graph(points)
+    edge_weight = float(weight.max())
+    def energy():
+        return float(unary[source, np.arange(count)].sum()+
+                     edge_weight*np.sum(source[edges[:, 0]] != source[edges[:, 1]]))
+    history = [energy()]
+    for _ in range(sweeps):
+        changed = False
+        for group in groups:
+            costs = unary[:, group].copy()
+            for i in range(len(unary)):
+                costs[i] += np.sum(weight[group]*(source[neighbors[group]] != i), axis=1)
+            proposed = np.argmin(costs, axis=0)
+            improve = costs[proposed, np.arange(len(group))] < costs[source[group], np.arange(len(group))]-1e-12
+            changed |= bool(improve.any())
+            source[group[improve]] = proposed[improve]
+        history.append(energy())
+        if not changed:
+            break
+    return source, history
 
 
 def fuse(points, colors, visibility, options):
@@ -274,15 +385,7 @@ def fuse(points, colors, visibility, options):
                                                  options.outlier_rate), axis=0)
     unary = agreement-.20*np.log(np.maximum(visibility, 1e-6))
     unary[visibility < .001] = 1e4
-    source = np.argmin(unary, axis=0)
-    neighbors = cKDTree(points).query(points, k=min(7, count))[1][:, 1:]
-    # Local MAP refinement on surface quadrature points. Source identity is only
-    # an input-view index, never an identified mark, part, or semantic feature.
-    for _ in range(4 if count > 1 else 0):
-        cost = unary.copy()
-        for i in range(nviews):
-            cost[i] += .12*np.mean(source[neighbors] != i, axis=1)
-        source = np.argmin(cost, axis=0)
+    source, _ = smooth_sources(unary, points)
     selected = colors[source, np.arange(count)]
     supported = np.any(visibility >= .001, axis=0)
     if not supported.any():
@@ -309,7 +412,12 @@ def fit_paint(model, views, options=None, progress=None, align=True):
     if not len(eligible):
         raise ValueError('No jointly visible paint samples to register.')
     chosen = rng.choice(eligible, min(len(eligible), options.samples), replace=False)
-    reg = Registration(views, uv[:, chosen], visibility[:, chosen], images, options)
+    if options.objective == 'shared':
+        from .paint_joint import SharedTextureRegistration
+        reg = SharedTextureRegistration(model, views, uv[:, chosen], visibility[:, chosen], images,
+            options, points[chosen], uv, visibility, points, indices, shell)
+    else:
+        reg = Registration(views, uv[:, chosen], visibility[:, chosen], images, options)
     reg.level_images = images
     reg.sigma = .065
     identity = np.zeros((len(views), options.knots, options.knots, 2))
@@ -318,10 +426,33 @@ def fit_paint(model, views, options=None, progress=None, align=True):
         controls, draws, diagnostics = register(reg, options, progress)
     else:
         controls, draws = identity, identity[None]
-        diagnostics = {'map_energy': initial_energy, 'chains': []}
+        reg.refine_texture(identity, reg.observations(identity))
+        diagnostics = {'map_energy': reg.energy(identity, reg.observations(identity)), 'chains': [],
+                       'objective': options.objective, 'sample_chain_indices': [0]}
+        reg.hypotheses = [(diagnostics['map_energy'], identity, reg.texture_state())]
     colors = np.array([sample_image(images[i], uv[i]+displacement(
         controls[i], warp_basis(uv[i], options.knots))) for i in range(len(views))])
-    selected, uncertainty, source = fuse(points, colors, visibility, options)
+    if options.objective == 'shared':
+        # This is the selected joint state, not a post-hoc fusion of its images.
+        selected = model.sample(points, reg.texture_state())
+        weight = visibility/np.maximum(visibility.sum(axis=0), 1e-8)
+        disagreement = np.sum(weight*np.mean((colors-selected[None])**2, axis=-1), axis=0)
+        uncertainty = np.clip(np.sqrt(disagreement)/.20+.25*((visibility > .03).sum(axis=0) < 2), 0, 1)
+        uncertainty[~reg.supported] = 1
+        source = np.argmax(visibility, axis=0)  # coverage diagnostic, not an output-source assignment
+    else:
+        selected, uncertainty, source = fuse(points, colors, visibility, options)
+    # Preserve up to three complete chain interpretations, rather than conflating
+    # different textures with uncertainty around a single conditional warp tail.
+    hypotheses = reg.hypotheses[:3]
+    model.paint_hypothesis_warps = np.array([h[1] for h in hypotheses], np.float32)
+    model.paint_hypothesis_energies = np.array([h[0] for h in hypotheses])
+    if options.objective == 'shared':
+        model.paint_hypothesis_colors = np.array([h[2] for h in hypotheses], np.float32)
+        alternatives = np.array([model.sample(points, h[2]) for h in hypotheses])
+        uncertainty = np.clip(uncertainty+np.sqrt(np.var(alternatives, axis=0).mean(axis=-1))/.2, 0, 1)
+    else:
+        model.paint_hypothesis_colors = None
     spread = np.zeros(len(points))
     per_view_spread = []
     for i in range(len(views)):
@@ -336,7 +467,8 @@ def fit_paint(model, views, options=None, progress=None, align=True):
     nearest = ndi.distance_transform_edt(~shell, return_distances=False, return_indices=True)
     volume = np.zeros((*shell.shape, 3), np.float32)
     volume[tuple(indices.T)] = selected
-    model.color = volume[tuple(nearest)].astype(np.float32)
+    model.color = (reg.texture_state() if options.objective == 'shared' else
+                   volume[tuple(nearest)].astype(np.float32))
     unc = np.ones(shell.shape, np.float32)
     unc[tuple(indices.T)] = uncertainty
     model.uncertainty = unc[tuple(nearest)].astype(np.float32)
@@ -350,5 +482,9 @@ def fit_paint(model, views, options=None, progress=None, align=True):
                         'source_fraction': [float(np.mean(source == i)) for i in range(len(views))],
                         'view_names': [v.name for v in views]})
     diagnostics['tail_displacement_std_pixels'] = per_view_spread
+    if options.objective == 'shared':
+        diagnostics['texture_updates'] = reg.texture_updates
+        diagnostics['export_energy'] = reg.energy(controls, reg.observations(controls))
+    diagnostics['hypothesis_count'] = len(hypotheses)
     model.metadata['paint_fit'] = diagnostics
     return diagnostics

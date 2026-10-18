@@ -51,3 +51,5 @@ Next, test actual hand-painted orthographic sheets; ask for a few corresponding 
 ## Follow-up experiment
 
 Continuous Monte Carlo paint correspondence fitting is now implemented. See [paint-fitting.md](paint-fitting.md) for the actual algorithm, benchmark, tuning controls, and mixed quantitative results. It fits only image-to-surface paint correspondence on fixed reconstructed geometry; camera/shape-hypothesis search and the other proposed improvements remain future work.
+
+The current [shared-texture experiment](shared-texture.md) couples paint and correspondence inference, fixes the two self-review bugs, retains chain interpretations, and evaluates predeclared fresh corruption sets. The original pairwise report remains historical evidence.

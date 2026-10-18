@@ -1,5 +1,7 @@
 # Monte Carlo fitting of inconsistent paint
 
+This is the historical v2 report for commit `c37724c`. The [shared-texture experiment](shared-texture.md) supersedes its default fitting path, fixes the reviewed bugs, and adds fresh-set evaluation. The original results in `examples/paint/` are preserved.
+
 This second experiment replaces direct paint averaging with feature-free probabilistic correspondence fitting and robust mode fusion. It uses no neural networks, pretrained descriptors, datasets, named regions, paired landmarks, or per-detail annotations. The SDF is held fixed: this experiment isolates texture reconciliation. Cameras and silhouettes still need to be supplied as in the original prototype.
 
 ![Held-out view: truth, projection baseline, fusion only, Monte Carlo](../examples/paint/comparison-0.png)
