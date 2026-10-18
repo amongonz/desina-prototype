@@ -1,6 +1,6 @@
-"""Desina prototype."""
+"""Desina: painted drawings to an editable implicit 3D volume."""
 
 
-def main() -> None:
-    """Run the prototype entry point."""
-    print("Hello from Desina!")
+def main():
+    from .cli import main as cli_main
+    cli_main()

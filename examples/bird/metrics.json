@@ -1,0 +1,40 @@
+{
+  "resolution": 80,
+  "input_views": 7,
+  "image_size": 160,
+  "reconstruction_seconds": 1.4157918679999852,
+  "paint_coverage": 0.8902782013486497,
+  "held_out": [
+    {
+      "camera": {
+        "azimuth": 30,
+        "elevation": 22,
+        "scale": 2.6
+      },
+      "silhouette_iou": 0.9296745070087907,
+      "foreground_psnr_db": 14.517160661053982,
+      "overlap_color_mae": 0.0423940634863047
+    },
+    {
+      "camera": {
+        "azimuth": 145,
+        "elevation": -12,
+        "scale": 2.6
+      },
+      "silhouette_iou": 0.9204306108120758,
+      "foreground_psnr_db": 14.27718108786104,
+      "overlap_color_mae": 0.04206576023395107
+    },
+    {
+      "camera": {
+        "azimuth": 275,
+        "elevation": 35,
+        "scale": 2.6
+      },
+      "silhouette_iou": 0.8569790770994554,
+      "foreground_psnr_db": 13.371820718568078,
+      "overlap_color_mae": 0.04983803812568901
+    }
+  ],
+  "mean_iou": 0.9023613983067739
+}

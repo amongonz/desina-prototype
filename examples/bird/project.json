@@ -1,0 +1,61 @@
+{
+  "description": "Synthetic painted bird; orthographic, registered silhouettes.",
+  "views": [
+    {
+      "image": "input-0.png",
+      "camera": {
+        "azimuth": 0,
+        "elevation": 5,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-1.png",
+      "camera": {
+        "azimuth": 60,
+        "elevation": 5,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-2.png",
+      "camera": {
+        "azimuth": 120,
+        "elevation": 5,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-3.png",
+      "camera": {
+        "azimuth": 180,
+        "elevation": 5,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-4.png",
+      "camera": {
+        "azimuth": 240,
+        "elevation": 5,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-5.png",
+      "camera": {
+        "azimuth": 300,
+        "elevation": 5,
+        "scale": 2.6
+      }
+    },
+    {
+      "image": "input-6.png",
+      "camera": {
+        "azimuth": 35,
+        "elevation": 65,
+        "scale": 2.6
+      }
+    }
+  ]
+}
